@@ -1,0 +1,11 @@
+
+Use your favorite Python program to run the py file,
+
+but for best results use RStudio to run the r file (as opposed to VS Code or a Jupyter Notebook).
+
+
+The point of each file is noted at the beginning of each file.
+
+
+The NRC event file used for this project is in the folder with this file, 
+and is named after the URL it was downloaded from.
