@@ -7,5 +7,5 @@ but for best results use RStudio to run the r file (as opposed to VS Code or a J
 The point of each file is noted at the beginning of each file.
 
 
-The NRC event file used for this project is in the folder with this file, 
+The NRC event file used for this project is in the repo with this file, 
 and is named after the URL it was downloaded from.
