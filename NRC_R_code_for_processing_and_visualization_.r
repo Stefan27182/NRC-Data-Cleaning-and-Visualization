@@ -13,6 +13,7 @@ options(max.print = 200)
 
 library(maps)
 
+library(cowplot)
 
 library(tcltk2)
 
@@ -291,14 +292,13 @@ new_bnd$State <- tolower(new_bnd$State)
 
 city_st_freq <- data.frame(x = nrow(new_bnd), y = 5)
 
-city_st_freq[1:nrow(new_bnd),3:6] <- new_bnd[1:nrow(new_bnd),4:7]
+city_st_freq[1:nrow(new_bnd),3:7] <- new_bnd[1:nrow(new_bnd),c(2, 4:7)]
 
-colnames(city_st_freq) <- c("lat", "long", "Site Name", "City", "State", "Frequency")
+colnames(city_st_freq) <- c("lat", "long", "Region", "Site Name", "City", "State", "Frequency")
 
 rownames(city_st_freq) <- c(1:nrow(city_st_freq))
 
 tmp_city <- data.frame()
-city_st_freq$City
 
 lat_long <- read_csv("raw_githubusercontent_com__kelvins__US-Cities-Database__main__csv__us_cities.csv")
 
@@ -324,13 +324,15 @@ label_str <- data.frame()
 x<-1
 for(x in 1:nrow(city_st_freq))
 {
-  label_str[x,1] <- paste(city_st_freq[x,3], ",\n", city_st_freq[x,4], ",\n", str_to_title(city_st_freq[x,5]), ",", city_st_freq[x,6], "\n")
+  label_str[x,1] <- paste(city_st_freq[x,4], ",\n", city_st_freq[x,5], ",\n", str_to_title(city_st_freq[x,6]), ",", city_st_freq[x,7], "\n")
   
 }
 
 city_st_freq <- cbind(city_st_freq, label_str)
 
-colnames(city_st_freq)[ncol(city_st_freq)] <- c("Site Name, City, State, and Frequency")
+city_st_freq[1:nrow(city_st_freq),6] <- str_to_title(city_st_freq[1:nrow(city_st_freq),6])
+
+colnames(city_st_freq)<- c("lat", "long", "Region", "Site Name", "City", "State", "Frequency", "Site Name, City, State, Report Frequency")
 
 
 # ---------------------------- PLOTS ---------------------------- # 
@@ -358,20 +360,64 @@ ggplot(data = multi_reports_df, aes(`Report Frequency`, fct_rev(`Site Name`), fi
   theme(plot.title = element_text(size=16, color = "black", face="bold", family = "Tahoma")) +
   theme(axis.title.x = element_text(size=12, color="black", face="bold", angle=0)) +
   theme(axis.title.y = element_text(size=12, color="black", face="bold", angle=90)) +
-  theme(legend.title = element_text(size=12, color="purple", face="bold", angle=0)) +
   scale_fill_identity() +
-  labs(x = "Report Count", y = "Site Name", fill = "Report Count")
+  labs(x = "Report Count", y = "Site Name")
 
 # ----- the previous plot shows the counts and sites for sites that have more than two reports in the reporting time-frame ------ #
 
 
 
 # ----- the plot below is a map with regions in different colors, and site location and counts shown ----- #
-ggplot(data=state_nrc_inner_join, aes(x=long, y=lat)) +
-  xlab("")+
-  ylab("")+
-  geom_polygon(aes(group=group), colour="black", fill=ifelse(state_nrc_inner_join$Region == 2, "red", ifelse(state_nrc_inner_join$Region == 3, "yellow", ifelse(state_nrc_inner_join$Region == 4, "purple", "blue")))) +
-  geom_point(data=city_st_freq, aes(x=long, y=lat, colour = `Site Name, City, State, and Frequency`, fill = `Site Name, City, State, and Frequency`), size = 5)
-# ----- this plot above  is a map with regions in different colors, and site location and counts shown ----- #
 
+
+# plot_1 <- ggplot(data=state_nrc_inner_join, aes(x=long, y=lat)) +
+#   xlab("NRC Regions")+
+#   ylab("")+
+#   
+#   geom_polygon(aes(group=group, fill = ifelse(`Region` == 2, "Region 2", ifelse(`Region` == 3, "Region 3", 
+#                   ifelse(`Region` == 4, "Region 4", "Region 1")))), colour = "black", show.legend = F) +
+# 
+#   labs(fill = "NRC Regions")
+
+
+# -----
+
+# plot_2 <- ggplot(data=state_nrc_inner_join, aes(x=long, y=lat)) +
+#           
+#           xlab("")+
+#           
+#           ylab("")+
+#   
+#     geom_point(data=city_st_freq, aes(x=long, y=lat, colour = `Site Name, City, State, Report Frequency`,
+#               fill = `Site Name, City, State, Report Frequency`), size = 5, show.legend = T)
+
+
+# -----
+
+# plot_3 <- ggplot(data=state_nrc_inner_join, aes(x=long, y=lat)) +
+#   xlab("Sites with more than one report in the reporting time-frame")+
+#   ylab("")+
+#   
+#   geom_polygon(aes(group=group, fill = ifelse(`Region` == 2, "Region 2", ifelse(`Region` == 3, "Region 3", 
+#               ifelse(`Region` == 4, "Region 4", "Region 1")))), colour = "black", show.legend = F) +
+#   
+#   geom_point(data=city_st_freq, aes(fill = `Site Name, City, State, Report Frequency`, color = `Site Name`), 
+#              size = 4, show.legend = F)
+
+# -----
+
+# legend_1 <- get_legend(plot_1)
+# 
+# legend_2 <- get_legend(plot_2)
+
+# -----
+
+cowplot::plot_grid(plot_1, plot_3, legend_1, legend_2, ncol = 2, nrow = 2, 
+                   rel_widths = c(0.65, 0.85), rel_heights = c(0.35, 0.35))
+
+
+
+# ----- the plot above is a two maps showing NRC regions in different colors, and site location and counts shown ----- #
+  
 # ----- FINIS ---- #
+
